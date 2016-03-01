@@ -4,9 +4,10 @@
 import MySQLdb as Sql
 import logging
 from threading import Lock
+import datetime
 
 __author__ = 'Michael Morscher'
-__description__ = ''
+__description__ = 'Database access management'
 __copyright__ = "Copyright 2015, Steam query tests"
 __version__ = "0.1"
 __maintainer__ = "Michael Morscher"
@@ -61,6 +62,7 @@ class Database(object):
                 return e
 
 # users
+# ToDo: Remove user_id from DB and here and use steam ID as primary key
     def user_exists(self, user_id):
         return self.get_element(self.send_command("SELECT id FROM users WHERE id = '{0}'".format(user_id)))
 
@@ -74,11 +76,22 @@ class Database(object):
         else:
             self.logger.error("User with ID {0} does not exist!".format(user_id))
 
+    # ToDo: remove *
     def user_get_all(self):
         return self.send_command("SELECT * FROM users")
 
+    def user_get_list_all(self):
+        return self.send_command("SELECT id, name FROM users")
+
+    # ToDo: remove *
     def user_get_active(self):
         return self.send_command("SELECT * FROM users WHERE active = '1'")
+
+    def user_get_list_active(self):
+        return self.send_command("SELECT id, name FROM users WHERE active = '1'")
+
+    def user_get_single_data(self, user_id):
+        return self.send_command("SELECT * FROM users WHERE id = '{0}'".format(user_id))
 
 # apps
     def app_exists(self, app_id):
@@ -100,3 +113,25 @@ class Database(object):
         self.send_command("INSERT INTO playtime (id,id_user,id_app,playtime_week,playtime_total,date) "
                           "VALUES (0, '{0}', '{1}', '{2}', '{3}', NOW())"
                           .format(user_id, app_id, playtime_week, playtime_total))
+
+
+# playground
+############
+
+    def playtime_get_1day(self, user_id, app_id, date):
+        return self.send_command("SELECT date, playtime_week, playtime_total FROM playtime WHERE id_user = '{0}' AND id_app = '{1}' AND date LIKE '{2}%'".format(user_id, app_id, date))
+
+
+
+
+
+if __name__ == "__main__":
+
+    database_host = "127.0.0.1"
+    database_user = "steamuser"
+    database_password = "steamuser!!345"
+    database_name = "steam"
+    database = Database(database_host, database_user, database_password, database_name)
+
+    for time in database.playtime_get_1day(4, 218620, datetime.datetime.now().strftime("%Y-%m-%d")):
+        print time
