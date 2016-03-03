@@ -7,8 +7,8 @@ from threading import Lock
 import datetime
 
 __author__ = 'Michael Morscher'
-__description__ = 'Database access management'
-__copyright__ = "Copyright 2015, Steam query tests"
+__description__ = 'Database access management / API'
+__copyright__ = "Copyright 2016"
 __version__ = "0.1"
 __maintainer__ = "Michael Morscher"
 __email__ = "morscher@hm.edu"
@@ -118,11 +118,14 @@ class Database(object):
 # playground
 ############
 
-    def playtime_get_1day(self, user_id, app_id, date):
+    def playtime_get_1day_game(self, user_id, app_id, date):
         return self.send_command("SELECT date, playtime_week, playtime_total FROM playtime WHERE id_user = '{0}' AND id_app = '{1}' AND date LIKE '{2}%'".format(user_id, app_id, date))
 
+    def playtime_get_1day(self, user_id, date):
+        return self.send_command("SELECT date, id_app, playtime_week, playtime_total FROM playtime WHERE id_user = '{0}' AND date LIKE '{1}%'".format(user_id, date))
 
-
+    def playtime_get_1day_game_ids(self, user_id, date):
+        return self.send_command("SELECT DISTINCT(id_app) FROM playtime WHERE id_user = '{0}' AND date LIKE '{1}%'".format(user_id, date))
 
 
 if __name__ == "__main__":
@@ -133,5 +136,5 @@ if __name__ == "__main__":
     database_name = "steam"
     database = Database(database_host, database_user, database_password, database_name)
 
-    for time in database.playtime_get_1day(4, 218620, datetime.datetime.now().strftime("%Y-%m-%d")):
+    for time in database.playtime_get_1day_game(4, 218620, datetime.datetime.now().strftime("%Y-%m-%d")):
         print time
