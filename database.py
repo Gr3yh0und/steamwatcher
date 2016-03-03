@@ -127,7 +127,9 @@ class Database(object):
     def block_playtime_day(self, user_id, date):
         return self.send_command("SELECT SUM(duration) FROM blocks WHERE id_user = '{0}' AND start LIKE '{1}%' ".format(user_id, date))
 
-    def block_playtime_month(self, user_id, start, end):
+    def block_playtime_month(self, user_id, month):
+        start = "{0}-01".format(month)
+        end = "{0}-31".format(month)
         return self.send_command("SELECT SUM(duration) FROM blocks WHERE id_user = '{0}' AND start BETWEEN '{1}' AND '{2}'".format(user_id, start, end))
 
 
