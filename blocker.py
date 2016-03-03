@@ -29,16 +29,21 @@ database_name = "steam"
 database = Database(database_host, database_user, database_password, database_name)
 
 
-def block_finalize(logger, block_start, block_duration, block_number, block_counter, block_total_game_time):
+def block_finalize(logger, id_user, id_app, block_start, block_duration, block_number, block_counter, block_total_game_time):
+    # check
     if block_counter > 0:
+        # add to database
         logger.info('BLOCK: From {0} with duration of {1} minutes. End at {2} '
                     .format(block_start, block_duration, block_start + datetime.timedelta(minutes=block_duration)))
+        database.block_add(id_user, id_app, block_start, block_duration)
+
+        # increase counters
         block_number += 1
         block_total_game_time += block_duration
     return block_number, block_total_game_time
 
 
-def find_blocks_day_game(id_user, id_game, day):
+def find_blocks_day_game(id_user, id_app, day):
 
     # variables
     total_game_time_old = 0
@@ -50,9 +55,9 @@ def find_blocks_day_game(id_user, id_game, day):
     block_total_game_time = 0
 
     logger = logging.getLogger("steam.blocker.find_blocks_day_game")
-    logger.info("Trying to find blocks for user {0} with game {1} on the {2}".format(id_user, id_game, day))
+    logger.info("Trying to find blocks for user {0} with game {1} on the {2}".format(id_user, id_app, day))
 
-    for data in database.playtime_get_1day_game(id_user, id_game, day):
+    for data in database.playtime_get_1day_game(id_user, id_app, day):
         total_game_time = data[2]
 
         # only for first iteration needed
@@ -85,7 +90,7 @@ def find_blocks_day_game(id_user, id_game, day):
 
             # it looks like block has ended, so reset everything
             else:
-                block_number, block_total_game_time = block_finalize(logger, block_start, block_duration, block_number, block_counter, block_total_game_time)
+                block_number, block_total_game_time = block_finalize(logger, id_user, id_app, block_start, block_duration, block_number, block_counter, block_total_game_time)
                 block_counter = 0
                 block_detect = 0
                 block_start = 0
@@ -100,7 +105,7 @@ def find_blocks_day_game(id_user, id_game, day):
             total_game_time_old = data[2]
 
     # needed if game session goes into the next day (23:45 -> 0:00)
-    block_number, block_total_game_time = block_finalize(logger, block_start, block_duration, block_number, block_counter, block_total_game_time)
+    block_number, block_total_game_time = block_finalize(logger, id_user, id_app, block_start, block_duration, block_number, block_counter, block_total_game_time)
 
     logger.info("{0} blocks in time frame with a total of {1} minutes play time".format(block_number, block_total_game_time))
     return block_number, block_total_game_time
@@ -124,8 +129,17 @@ def find_blocks_day(id_user, day):
     return
 
 
-
-
 if __name__ == "__main__":
 
-    find_blocks_day(4, "2016-02-25")
+    #for day in range(1, 32):
+    #    find_blocks_day(3, "2016-01-{0:0=2d}".format(day))
+    #    find_blocks_day(3, "2016-02-{0:0=2d}".format(day))
+    #    find_blocks_day(4, "2016-01-{0:0=2d}".format(day))
+    #    find_blocks_day(4, "2016-02-{0:0=2d}".format(day))
+    #    find_blocks_day(6, "2016-01-{0:0=2d}".format(day))
+    #    find_blocks_day(6, "2016-02-{0:0=2d}".format(day))
+
+    print database.block_playtime_day(4, "2016-02-23")
+    print database.block_playtime_month(4, "2016-02-01", "2016-02-29")
+    print database.block_playtime_month(3, "2016-02-01", "2016-02-29")
+    print database.block_playtime_month(6, "2016-02-01", "2016-02-29")

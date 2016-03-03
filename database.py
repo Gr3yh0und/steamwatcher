@@ -109,10 +109,26 @@ class Database(object):
         else:
             self.logger.error("App with ID {0} does not exist!".format(app_id))
 
+# playtime
+
     def playtime_add(self, user_id, app_id, playtime_week, playtime_total):
         self.send_command("INSERT INTO playtime (id,id_user,id_app,playtime_week,playtime_total,date) "
                           "VALUES (0, '{0}', '{1}', '{2}', '{3}', NOW())"
                           .format(user_id, app_id, playtime_week, playtime_total))
+
+
+# blocks
+
+    def block_add(self, user_id, app_id, start, duration):
+        return self.send_command("INSERT INTO blocks (id,id_user,id_app,start,end,duration)"
+                                 "VALUES (0, '{0}', '{1}', '{2}', '{3}', '{4}')"
+                                 .format(user_id, app_id, start.replace(second=0, microsecond=0), start.replace(second=0, microsecond=0) + datetime.timedelta(minutes=duration), duration))
+
+    def block_playtime_day(self, user_id, date):
+        return self.send_command("SELECT SUM(duration) FROM blocks WHERE id_user = '{0}' AND start LIKE '{1}%' ".format(user_id, date))
+
+    def block_playtime_month(self, user_id, start, end):
+        return self.send_command("SELECT SUM(duration) FROM blocks WHERE id_user = '{0}' AND start BETWEEN '{1}' AND '{2}'".format(user_id, start, end))
 
 
 # playground
