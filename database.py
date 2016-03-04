@@ -109,32 +109,15 @@ class Database(object):
         else:
             self.logger.error("App with ID {0} does not exist!".format(app_id))
 
+    def app_get_name(self, app_id):
+        return self.get_element(self.send_command("SELECT name FROM apps WHERE id = '{0}'".format(app_id)))
+
 # playtime
 
     def playtime_add(self, user_id, app_id, playtime_week, playtime_total):
         self.send_command("INSERT INTO playtime (id,id_user,id_app,playtime_week,playtime_total,date) "
                           "VALUES (0, '{0}', '{1}', '{2}', '{3}', NOW())"
                           .format(user_id, app_id, playtime_week, playtime_total))
-
-
-# blocks
-
-    def block_add(self, user_id, app_id, start, duration):
-        return self.send_command("INSERT INTO blocks (id,id_user,id_app,start,end,duration)"
-                                 "VALUES (0, '{0}', '{1}', '{2}', '{3}', '{4}')"
-                                 .format(user_id, app_id, start.replace(second=0, microsecond=0), start.replace(second=0, microsecond=0) + datetime.timedelta(minutes=duration), duration))
-
-    def block_playtime_day(self, user_id, date):
-        return self.send_command("SELECT SUM(duration) FROM blocks WHERE id_user = '{0}' AND start LIKE '{1}%' ".format(user_id, date))
-
-    def block_playtime_month(self, user_id, month):
-        start = "{0}-01".format(month)
-        end = "{0}-31".format(month)
-        return self.send_command("SELECT SUM(duration) FROM blocks WHERE id_user = '{0}' AND start BETWEEN '{1}' AND '{2}'".format(user_id, start, end))
-
-
-# playground
-############
 
     def playtime_get_1day_game(self, user_id, app_id, date):
         return self.send_command("SELECT date, playtime_week, playtime_total FROM playtime WHERE id_user = '{0}' AND id_app = '{1}' AND date LIKE '{2}%'".format(user_id, app_id, date))
@@ -146,6 +129,30 @@ class Database(object):
         return self.send_command("SELECT DISTINCT(id_app) FROM playtime WHERE id_user = '{0}' AND date LIKE '{1}%'".format(user_id, date))
 
 
+# blocks
+
+    def block_add(self, user_id, app_id, start, duration):
+        return self.send_command("INSERT INTO blocks (id,id_user,id_app,start,end,duration)"
+                                 "VALUES (0, '{0}', '{1}', '{2}', '{3}', '{4}')"
+                                 .format(user_id, app_id, start.replace(second=0, microsecond=0), start.replace(second=0, microsecond=0) + datetime.timedelta(minutes=duration), duration))
+
+    def block_playtime_day_total(self, user_id, date):
+        return self.send_command("SELECT SUM(duration) FROM blocks WHERE id_user = '{0}' AND start LIKE '{1}%' ".format(user_id, date))
+
+    def block_playtime_day_game(self, user_id, app_id, date):
+        return self.send_command("SELECT SUM(duration) FROM blocks WHERE id_user = '{0}' AND id_app = '{1}' AND start LIKE '{2}%' ".format(user_id, app_id, date))
+
+    def block_playtime_month(self, user_id, month):
+        start = "{0}-01".format(month)
+        end = "{0}-31".format(month)
+        return self.send_command("SELECT SUM(duration) FROM blocks WHERE id_user = '{0}' AND start BETWEEN '{1}' AND '{2}'".format(user_id, start, end))
+
+    def blocks_get_month_app_ids(self, user_id, month):
+        start = "{0}-01".format(month)
+        end = "{0}-31".format(month)
+        return self.send_command("SELECT DISTINCT(id_app) FROM blocks WHERE id_user = '{0}' AND start BETWEEN '{1}' AND '{2}'".format(user_id, start, end))
+
+
 if __name__ == "__main__":
 
     database_host = "127.0.0.1"
@@ -154,5 +161,7 @@ if __name__ == "__main__":
     database_name = "steam"
     database = Database(database_host, database_user, database_password, database_name)
 
-    for time in database.playtime_get_1day_game(4, 218620, datetime.datetime.now().strftime("%Y-%m-%d")):
-        print time
+    #for time in database.playtime_get_1day_game(4, 218620, datetime.datetime.now().strftime("%Y-%m-%d")):
+        #print time
+
+    print database.blocks_get_month_app_ids(3, "2016-01")
