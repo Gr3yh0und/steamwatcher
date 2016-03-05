@@ -1,10 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from flask import Flask, jsonify
-from database import Database
 import json
+import datetime
+import dateutils
+from flask import Flask, jsonify
 from flask_cors import CORS, cross_origin
+from database import Database
 
 __author__ = 'Michael Morscher'
 __description__ = 'REST backend service'
@@ -47,7 +49,9 @@ def block_day(day, user):
     return json.dumps(data)
 
 
-@app.route("/block/month/total/<month>/user/<user>")
+# diagram x - get the total amount of playtime in a month
+@app.route("/block/month/total/<month>/user/<user>/")
+@cross_origin(origin='*', headers=['Content- Type', 'Authorization'])
 def block_month_total(month, user):
     value = database.block_playtime_month(user, month)[0][0]
     if value is not None:
@@ -57,7 +61,44 @@ def block_month_total(month, user):
     return json.dumps(data)
 
 
-#
+# diagram 3 - get the total amount of playtime in the last 12 months
+@app.route("/block/month/last12/user/<user>/")
+@cross_origin(origin='*', headers=['Content- Type', 'Authorization'])
+def block_month_last12(user):
+    value = []
+
+    # calculate the first day of the current month
+    day_today = datetime.date.today()
+    day_first = day_today.replace(day=1)
+    month = day_first
+
+    # get the last 12 year-month-combinations
+    for i in range(0, 12):
+
+        # current date and database query
+        date = "{0}-{1:0=2d}".format(month.year, month.month)
+        result = database.block_playtime_month(user, date)[0][0]
+
+        # replace None with 0
+        if result is None:
+            result = 0
+
+        # add result to the final list
+        value.append({"c": [{"v": date}, {"v": int(result)}]})
+
+        # do the calculation for the next iteration
+        month = month - dateutils.relativedelta(months=+1)
+
+    # create columns dictionary and add X-Axis
+    cols_dict = [
+        {"label": 'Day', "type": 'string'},
+        {"label": 'Playtime', "type": 'number'}
+    ]
+
+    return jsonify(cols=cols_dict, rows=value)
+
+
+# diagram 1 - get details for a month / every day and every game
 @app.route("/block/month/details/<month>/user/<user>/")
 @cross_origin(origin='*', headers=['Content- Type', 'Authorization'])
 def block_month_details(month, user):
