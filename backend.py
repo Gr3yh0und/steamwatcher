@@ -61,43 +61,6 @@ def block_month_total(month, user):
     return json.dumps(data)
 
 
-# diagram 3 - get the total amount of playtime in the last 12 months
-@app.route("/block/month/last12/user/<user>/")
-@cross_origin(origin='*', headers=['Content- Type', 'Authorization'])
-def block_month_last12(user):
-    value = []
-
-    # calculate the first day of the current month
-    day_today = datetime.date.today()
-    day_first = day_today.replace(day=1)
-    month = day_first
-
-    # get the last 12 year-month-combinations
-    for i in range(0, 12):
-
-        # current date and database query
-        date = "{0}-{1:0=2d}".format(month.year, month.month)
-        result = database.block_playtime_month(user, date)[0][0]
-
-        # replace None with 0
-        if result is None:
-            result = 0
-
-        # add result to the final list
-        value.append({"c": [{"v": date}, {"v": int(result)}]})
-
-        # do the calculation for the next iteration
-        month = month - dateutils.relativedelta(months=+1)
-
-    # create columns dictionary and add X-Axis
-    cols_dict = [
-        {"label": 'Day', "type": 'string'},
-        {"label": 'Playtime', "type": 'number'}
-    ]
-
-    return jsonify(cols=cols_dict, rows=value)
-
-
 # diagram 1 - get details for a month / every day and every game
 @app.route("/block/month/details/<month>/user/<user>/")
 @cross_origin(origin='*', headers=['Content- Type', 'Authorization'])
@@ -134,6 +97,63 @@ def block_month_details(month, user):
     # add a column for every app
     for application in apps:
         cols_dict.append({"label": database.app_get_name(application[0]), "type": 'number'})
+
+    return jsonify(cols=cols_dict, rows=value)
+
+
+# diagram 2 - get the total amount of playtime in a month
+@app.route("/block/month/playtime/<month>/user/<user>/")
+@cross_origin(origin='*', headers=['Content- Type', 'Authorization'])
+def block_month_app_playtime(month, user):
+    value = []
+
+    for application in database.blocks_get_month_app_ids(user, month):
+        app_name = database.app_get_name(application[0])
+        result = database.block_playtime_day_game(user, application[0], month)[0][0]
+        value.append({"c": [{"v": app_name}, {"v": int(result)}]})
+
+    # create columns dictionary and add X-Axis
+    cols_dict = [
+        {"label": 'App', "type": 'string'},
+        {"label": 'Playtime', "type": 'number'}
+    ]
+
+    return jsonify(cols=cols_dict, rows=value)
+
+
+# diagram 3 - get the total amount of playtime in the last 12 months
+@app.route("/block/month/last12/user/<user>/")
+@cross_origin(origin='*', headers=['Content- Type', 'Authorization'])
+def block_month_last12(user):
+    value = []
+
+    # calculate the first day of the current month
+    day_today = datetime.date.today()
+    day_first = day_today.replace(day=1)
+    month = day_first
+
+    # get the last 12 year-month-combinations
+    for i in range(0, 12):
+
+        # current date and database query
+        date = "{0}-{1:0=2d}".format(month.year, month.month)
+        result = database.block_playtime_month(user, date)[0][0]
+
+        # replace None with 0
+        if result is None:
+            result = 0
+
+        # add result to the final list
+        value.append({"c": [{"v": date}, {"v": int(result)}]})
+
+        # do the calculation for the next iteration
+        month = month - dateutils.relativedelta(months=+1)
+
+    # create columns dictionary and add X-Axis
+    cols_dict = [
+        {"label": 'Day', "type": 'string'},
+        {"label": 'Playtime', "type": 'number'}
+    ]
 
     return jsonify(cols=cols_dict, rows=value)
 

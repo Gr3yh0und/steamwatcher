@@ -32,14 +32,11 @@ function drawStacked() {
 }
 
 function drawChartDonut() {
-        var data = google.visualization.arrayToDataTable([
-          ['Task', 'Hours per Day'],
-          ['Work',     11],
-          ['Eat',      2],
-          ['Commute',  2],
-          ['Watch TV', 2],
-          ['Sleep',    7]
-        ]);
+        var jsonData = $.ajax({
+		url: "http://127.0.0.1:5000/block/month/playtime/2016-02/user/4/",
+		dataType: "json",
+		async: false
+	  }).responseText;
 
         var options = {
           title: 'Games',
@@ -47,6 +44,7 @@ function drawChartDonut() {
 		  height: 450,
         };
 
+		var data = new google.visualization.DataTable(jsonData);
         var chart = new google.visualization.PieChart(document.getElementById('donutchart'));
         chart.draw(data, options);
       }
