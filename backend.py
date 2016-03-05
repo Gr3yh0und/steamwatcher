@@ -180,7 +180,7 @@ def block_month_last365(user):
             result = 0
 
         # add result to the final list
-        value.append({"c": [{"v": "Date({0}, {1}, {2})".format(day.year, day.month, day.day)}, {"v": int(result)}]})
+        value.append({"c": [{"v": "Date({0}, {1}, {2})".format(day.year, int(day.month) - 1, day.day)}, {"v": int(result)}]})
 
         # do the calculation for the next iteration
         day = day - dateutils.relativedelta(days=+1)
