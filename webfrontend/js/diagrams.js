@@ -93,3 +93,29 @@ function drawCalendar() {
 
     chart.draw(data, options);
 }
+
+function drawWeeklyDetails() {
+
+    var jsonData = $.ajax({
+        url: "http://127.0.0.1:5000/block/week/last/user/4/",
+        dataType: "json",
+        async: false
+    }).responseText;
+
+    var options = {
+        title: 'Playtime for last 7 days',
+        isStacked: true,
+        width: 1200,
+        height: 450,
+        hAxis: {
+            title: 'Day'
+        },
+        vAxis: {
+            title: 'Playtime in Minutes'
+        }
+    };
+
+    var data = new google.visualization.DataTable(jsonData);
+    var chart = new google.visualization.ColumnChart(document.getElementById('chart_weekly_playtime'));
+    chart.draw(data, options);
+}

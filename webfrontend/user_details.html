@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Steam Watcher">
+    <meta name="author" content="Michael Morscher">
+    <!-- <link rel="icon" href="../../favicon.ico"> -->
+
+    <title>Steam Watcher</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/panels.css" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">Steam Watcher</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li><a href="index.html">Home <span class="sr-only">(current)</span></a>
+                    </li>
+                    <li class="dropdown active">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Users <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="user_overview.html">Overview</a>
+                            </li>
+                            <li><a href="user_details.html">Details</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Games <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#">Overview</a>
+                            </li>
+                            <li><a href="#">List</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li><a href="#">Steam</a>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+
+        </div>
+        <!-- /.container-fluid -->
+    </nav>
+
+    <!-- page content -->
+    <div class="row">
+        <div class="col-md-2"></div>
+        <div class="col-md-8">
+
+            <!-- Select a user -->
+            <div class="dropdown">
+                <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                    Select a user
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenu1" id="user_dropdown">
+                </ul>
+            </div>
+            <br>
+
+            <!-- Tabs for diagrams -->
+            <div class="col-md-12">
+                <div class="panel with-nav-tabs panel-default panel-primary">
+                    <div class="panel-heading clearfix">
+                        <div class="pull-left">
+                            <h1 class="panel-title" id="username">User: </h1>
+                        </div>
+                        <div class="pull-right">
+                            <ul class="nav nav-tabs">
+                                <li class="active"><a href="#tabinfo" data-toggle="tab">Information</a>
+                                </li>
+                                <li><a href="#tab7days" data-toggle="tab">Last 7 days</a>
+                                </li>
+                                <li><a href="#tabmonth" data-toggle="tab">Last month</a>
+                                </li>
+                                <li><a href="#tabyear" data-toggle="tab">Last year</a>
+                                </li>
+
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="tab-content">
+                            <div class="tab-pane fade in active" id="tabinfo">
+							<div class="container col-md-3"></div>
+                                <div class="container col-md-6">
+                                    <h2>General information</h2> 
+									<ul class="list-group" id="information">
+									</ul>
+                                </div>
+								<div class="container col-md-3"></div>
+                            </div>
+                            <div class="tab-pane fade" id="tab7days">
+                                <div class="container">
+                                    <h2>Playtime of apps in last 7 days</h2>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="tabmonth">
+                                <div class="container">
+                                    <h2>Playtime of apps in one month</h2>
+                                    <div id="chart_monthly_details"></div>
+                                </div>
+								<div class="container">
+									<h1>Distribution of playtime in apps in one month</h1>
+									<div id="chart_app_distribution"></div>
+								</div>
+                            </div>
+                            <div class="tab-pane fade" id="tabyear">
+                                <div class="container">
+									<h1>Total playtime of all apps in the last 12 months</h1>
+									<div id="chart_yearly_playtime"></div>
+								</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="col-md-2"></div>
+    </div>
+
+    <!-- javascript libraries -->
+	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="js/jquery-1.12.1.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js/diagrams.js"></script>
+	<script type="text/javascript">
+	var result = jQuery.parseJSON($.ajax({
+        url: "http://127.0.0.1:5000/user/information/user/3/",
+        dataType: "json",
+        async: false
+    }).responseText);
+	document.getElementById('username').innerHTML = 'User: ' + result[1].name;
+	$('#information').append('<li class="list-group-item">Steam ID: '+result[2].steamid+'</li>');
+	$('#information').append('<li class="list-group-item">Created on: '+result[3].created+'</li>');
+	$('#information').append('<li class="list-group-item">Total recorded playtime: '+result[4].recorded_playtime+' minutes</li>');
+	</script>
+	<script type="text/javascript">
+	var result = jQuery.parseJSON($.ajax({
+        url: "http://127.0.0.1:5000/user/list/",
+        dataType: "json",
+        async: false
+    }).responseText);
+	for (i = 0; i < result.length; i++) {
+		$('#user_dropdown').append('<li><a href="#">'+result[i].name+'</a></li>');
+	}
+	
+	</script>
+</body>
+
+</html>
