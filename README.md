@@ -24,7 +24,7 @@ There are different programs that need to be installed on your server.
 - Import SQL layout from repo
 - Configure cronjob
 - Configure webserver (optional)
-- Configure python modules (...)
+- Configure python modules (mysql, Flask, Flask-Cors, dateutils, requests)
 - Get a Steam API key
 
 # setup & startup

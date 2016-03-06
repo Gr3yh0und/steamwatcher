@@ -3,8 +3,8 @@
 
 import MySQLdb as Sql
 import logging
-from threading import Lock
 import datetime
+from threading import Lock
 
 __author__ = 'Michael Morscher'
 __description__ = 'Database access management / API'
@@ -157,17 +157,3 @@ class Database(object):
         start = "{0}-01".format(month)
         end = "{0}-31".format(month)
         return self.send_command("SELECT DISTINCT(id_app) FROM blocks WHERE id_user = '{0}' AND start BETWEEN '{1}' AND '{2}'".format(user_id, start, end))
-
-
-if __name__ == "__main__":
-
-    database_host = "127.0.0.1"
-    database_user = "steamuser"
-    database_password = "steamuser!!345"
-    database_name = "steam"
-    database = Database(database_host, database_user, database_password, database_name)
-
-    #for time in database.playtime_get_1day_game(4, 218620, datetime.datetime.now().strftime("%Y-%m-%d")):
-        #print time
-
-    print database.blocks_get_month_app_ids(3, "2016-01")

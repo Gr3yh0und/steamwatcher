@@ -3,7 +3,9 @@
 
 import logging
 import datetime
+
 from database import Database
+import configuration
 
 __author__ = 'Michael Morscher'
 __description__ = ''
@@ -21,12 +23,9 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 sh.setFormatter(formatter)
 logger.addHandler(sh)
 
-# database configuration
-database_host = "127.0.0.1"
-database_user = "steamuser"
-database_password = "steamuser!!345"
-database_name = "steam"
-database = Database(database_host, database_user, database_password, database_name)
+# database connection
+database = Database(configuration.database_host, configuration.database_user,
+                    configuration.database_password, configuration.database_name)
 
 
 def block_finalize(logger, id_user, id_app, block_start, block_duration, block_number, block_counter, block_total_game_time):
@@ -131,15 +130,15 @@ def find_blocks_day(id_user, day):
 
 if __name__ == "__main__":
 
-    #for day in range(1, 32):
+    for day in range(1, 32):
     #    find_blocks_day(3, "2016-01-{0:0=2d}".format(day))
     #    find_blocks_day(3, "2016-02-{0:0=2d}".format(day))
     #    find_blocks_day(4, "2016-01-{0:0=2d}".format(day))
-    #    find_blocks_day(4, "2016-02-{0:0=2d}".format(day))
+         find_blocks_day(4, "2016-03-{0:0=2d}".format(day))
     #    find_blocks_day(6, "2016-01-{0:0=2d}".format(day))
     #    find_blocks_day(6, "2016-02-{0:0=2d}".format(day))
 
-    print database.block_playtime_day(4, "2016-02-23")
-    print database.block_playtime_month(4, "2016-02-01", "2016-02-29")
-    print database.block_playtime_month(3, "2016-02-01", "2016-02-29")
-    print database.block_playtime_month(6, "2016-02-01", "2016-02-29")
+    #print database.block_playtime_day_total(4, "2016-02-23")
+    #print database.block_playtime_month(4, "2016-02")
+    #print database.block_playtime_month(3, "2016-02")
+    #print database.block_playtime_month(6, "2016-02")

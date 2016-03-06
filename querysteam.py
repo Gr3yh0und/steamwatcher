@@ -12,23 +12,12 @@ __status__ = "in development"
 import requests
 import urllib
 import logging
-import time
-import json
-from database import Database
 
-# Steam API
-steam_api_key = "A104C12F64A12F31CF6408D54496022C"
-steam_base_url = "http://api.steampowered.com/"
-steam_logo_url = "http://media.steampowered.com/steamcommunity/public/images/apps/"
+from database import Database
+import configuration
 
 # user agent for queries
 user_agent = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:39.0) Gecko/20100101 Firefox/39.0'
-
-# database configuration
-database_host = "bitch"
-database_user = "steamuser"
-database_password = "steamuser!!345"
-database_name = "steam"
 
 # folder
 folder_logos = "logos"
@@ -41,21 +30,22 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 sh.setFormatter(formatter)
 logger.addHandler(sh)
 
-# create database connection
-database = Database(database_host, database_user, database_password, database_name)
+# database connection
+database = Database(configuration.database_host, configuration.database_user,
+                    configuration.database_password, configuration.database_name)
 
 
 def steam_api_url(url_part, key, additional_parameters):
-    return steam_base_url + url_part + "?key=" + key + additional_parameters
+    return configuration.steam_base_url + url_part + "?key=" + key + additional_parameters
 
 
 def steam_api_logo_url(app_id, app_logo_url):
-    return steam_logo_url + "/" + str(app_id) + "/" + app_logo_url + ".jpg"
+    return configuration.steam_logo_url + "/" + str(app_id) + "/" + app_logo_url + ".jpg"
 
 
 def steam_api_recent_games(player_id, data_format='json'):
     return steam_api_url("IPlayerService/GetRecentlyPlayedGames/v0001/",
-                         steam_api_key, '&steamid=' + str(player_id) + "&format=" + data_format)
+                         configuration.steam_api_key, '&steamid=' + str(player_id) + "&format=" + data_format)
 
 
 def steam_api_query(url):

@@ -5,8 +5,10 @@ import json
 import datetime
 import dateutils
 from flask import Flask, jsonify
-from flask_cors import CORS, cross_origin
+from flask_cors import cross_origin
+
 from database import Database
+import configuration
 
 __author__ = 'Michael Morscher'
 __description__ = 'REST backend service'
@@ -16,22 +18,21 @@ __maintainer__ = "Michael Morscher"
 __email__ = "morscher@hm.edu"
 __status__ = "in development"
 
-# database configuration
-database_host = "192.168.0.8"
-database_user = "steamuser"
-database_password = "steamuser!!345"
-database_name = "steam"
-database = Database(database_host, database_user, database_password, database_name)
+# database connection
+database = Database(configuration.database_host, configuration.database_user,
+                    configuration.database_password, configuration.database_name)
 
+# flask app configuration
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret_key'
 app.config['CORS_HEADERS'] = 'Content-Type'
-cors = CORS(app, resources={r"/set": {"origins": "*"}})
+host_ip = '0.0.0.0'
+debug_level = True
 
 
 @app.route("/")
 def index():
-    return "Steam Watcher Backend"
+    return "Steam Watcher Backend REST API v{0}".format(__version__)
 
 
 @app.route("/user/information/user/<user>/")
@@ -44,7 +45,6 @@ def user_information(user):
     data.append({'steamid': result[0][1]})
     data.append({'created': "{0}".format(result[0][2])})
     data.append({'recorded_playtime': int(database.user_get_recorded_playtime(user)[0][0])})
-    result = [{"result": data}]
     return json.dumps(data)
 
 
@@ -56,11 +56,6 @@ def user_list():
     for user in result:
         data.append({'id': user[0], 'name': user[1]})
     return json.dumps(data)
-
-
-@app.route("/block")
-def block():
-    return "Get Block Information"
 
 
 @app.route("/block/day/<day>/user/<user>")
@@ -115,8 +110,6 @@ def block_week_last(user):
         {"label": 'Day', "type": 'string'},
         {"label": 'Playtime', "type": 'number'}
     ]
-
-
 
     return jsonify(cols=cols_dict, rows=value)
 
@@ -255,4 +248,4 @@ def block_month_last365(user):
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host=host_ip, debug=debug_level)
