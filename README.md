@@ -3,13 +3,13 @@ This application aims at people who would like to have further information about
 
 What this project mainly consists of:
 - Python script that is started by a cronjob regularly 
--- which requests the data from the steam backend
--- analysis the data
--- stores the results in a database
+ - which requests the data from the steam backend
+ - analysis the data
+ - stores the results in a database
 - Python script that servers as a RESTful backend API
 - Frontend services
--- Web-Frontend based upon Bootstrap and Google Charts
--- Smartphone Apps (Android, Windows Phone, iOS)
+ - Web-Frontend based upon Bootstrap and Google Charts
+ - Smartphone Apps (Android, Windows Phone, iOS)
 
 # prerequisites
 There are different programs that need to be installed on your server.
@@ -24,7 +24,7 @@ There are different programs that need to be installed on your server.
 - Import SQL layout from repo
 - Configure cronjob
 - Configure webserver (optional)
- - Configure python modules (...)
+- Configure python modules (...)
 - Get a Steam API key
 
 # setup & startup
