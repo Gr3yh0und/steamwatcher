@@ -34,6 +34,30 @@ def index():
     return "Steam Watcher Backend"
 
 
+@app.route("/user/information/user/<user>/")
+@cross_origin(origin='*', headers=['Content- Type', 'Authorization'])
+def user_information(user):
+    data = []
+    result = database.user_get_single_data(user)
+    data.append({'id': user})
+    data.append({'name': result[0][0]})
+    data.append({'steamid': result[0][1]})
+    data.append({'created': "{0}".format(result[0][2])})
+    data.append({'recorded_playtime': int(database.user_get_recorded_playtime(user)[0][0])})
+    result = [{"result": data}]
+    return json.dumps(data)
+
+
+@app.route("/user/list/")
+@cross_origin(origin='*', headers=['Content- Type', 'Authorization'])
+def user_list():
+    data = []
+    result = database.user_get_list_active()
+    for user in result:
+        data.append({'id': user[0], 'name': user[1]})
+    return json.dumps(data)
+
+
 @app.route("/block")
 def block():
     return "Get Block Information"
@@ -61,6 +85,42 @@ def block_month_total(month, user):
     return json.dumps(data)
 
 
+# diagram X - last 7 days
+@app.route("/block/week/last/user/<user>/")
+@cross_origin(origin='*', headers=['Content- Type', 'Authorization'])
+def block_week_last(user):
+    value = []
+
+    # get todays date
+    today = datetime.date.today()
+
+    # check for every day
+    for x in range(1, 8):
+
+        # calculate date difference
+        day = today - datetime.timedelta(days=x)
+        date = "{0}".format(day)
+        entry = [{"v": date}]
+
+        # query db
+        result = database.block_playtime_day_total_detailed(user, date)
+        for application in result:
+            entry.append([{"v": int(application[0])}, {"v": int(application[1])}])
+
+        # add to list
+        value.append({"c": entry})
+
+    # create columns dictionary and add X-Axis
+    cols_dict = [
+        {"label": 'Day', "type": 'string'},
+        {"label": 'Playtime', "type": 'number'}
+    ]
+
+
+
+    return jsonify(cols=cols_dict, rows=value)
+
+
 # diagram 1 - get details for a month / every day and every game
 @app.route("/block/month/details/<month>/user/<user>/")
 @cross_origin(origin='*', headers=['Content- Type', 'Authorization'])
@@ -79,7 +139,7 @@ def block_month_details(month, user):
 
         # request playtime for every app
         for application in apps:
-            result = database.block_playtime_day_game(user, application[0], date)[0][0]
+            result = database.block_playtime_day_by_game(user, application[0], date)[0][0]
 
             # replace None with 0
             if result is None:
@@ -110,7 +170,7 @@ def block_month_app_playtime(month, user):
     # check every application
     for application in database.blocks_get_month_app_ids(user, month):
         app_name = database.app_get_name(application[0])
-        result = database.block_playtime_day_game(user, application[0], month)[0][0]
+        result = database.block_playtime_day_by_game(user, application[0], month)[0][0]
         value.append({"c": [{"v": app_name}, {"v": int(result)}]})
 
     # create columns dictionary and add X-Axis
