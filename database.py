@@ -91,7 +91,10 @@ class Database(object):
         return self.send_command("SELECT id, name FROM users WHERE active = '1'")
 
     def user_get_single_data(self, user_id):
-        return self.send_command("SELECT * FROM users WHERE id = '{0}'".format(user_id))
+        return self.send_command("SELECT name, steamid, created FROM users WHERE id = '{0}'".format(user_id))
+
+    def user_get_recorded_playtime(self, user_id):
+        return self.send_command("SELECT SUM(duration) FROM blocks WHERE id_user = '{0}' ".format(user_id))
 
 # apps
     def app_exists(self, app_id):
@@ -139,7 +142,10 @@ class Database(object):
     def block_playtime_day_total(self, user_id, date):
         return self.send_command("SELECT SUM(duration) FROM blocks WHERE id_user = '{0}' AND start LIKE '{1}%' ".format(user_id, date))
 
-    def block_playtime_day_game(self, user_id, app_id, date):
+    def block_playtime_day_total_detailed(self, user_id, date):
+        return self.send_command("SELECT id_app, SUM(duration) FROM blocks WHERE id_user = '{0}' AND start LIKE '{1}%' GROUP BY id_app".format(user_id, date))
+
+    def block_playtime_day_by_game(self, user_id, app_id, date):
         return self.send_command("SELECT SUM(duration) FROM blocks WHERE id_user = '{0}' AND id_app = '{1}' AND start LIKE '{2}%' ".format(user_id, app_id, date))
 
     def block_playtime_month(self, user_id, month):
