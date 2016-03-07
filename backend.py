@@ -80,36 +80,49 @@ def block_month_total(month, user):
     return json.dumps(data)
 
 
-# diagram X - last 7 days
-@app.route("/block/week/last/user/<user>/")
+# diagram 5 - last given days
+@app.route("/block/last/days/<days>/user/<user>/")
 @cross_origin(origin='*', headers=['Content- Type', 'Authorization'])
-def block_week_last(user):
+def block_last_dayst(days, user):
     value = []
 
     # get todays date
     today = datetime.date.today()
 
+    # get all used apps for the last given days
+    applications = database.blocks_get_ids_lastdays(user, int(days))
+
     # check for every day
-    for x in range(1, 8):
+    for x in range(1, int(days) + 1):
 
         # calculate date difference
         day = today - datetime.timedelta(days=x)
         date = "{0}".format(day)
         entry = [{"v": date}]
 
-        # query db
+        # query db for playtime
         result = database.block_playtime_day_total_detailed(user, date)
-        for application in result:
-            entry.append([{"v": int(application[0])}, {"v": int(application[1])}])
+
+        for application in applications:
+            found = False
+            for applicationtime in result:
+
+                if application[0] == applicationtime[0]:
+                    found = True
+                    entry.append({"v": int(applicationtime[1])})
+
+            if found is False:
+                entry.append({"v": 0})
 
         # add to list
         value.append({"c": entry})
 
     # create columns dictionary and add X-Axis
-    cols_dict = [
-        {"label": 'Day', "type": 'string'},
-        {"label": 'Playtime', "type": 'number'}
-    ]
+    cols_dict = [{"label": 'Day', "type": 'string'}]
+
+    # add every app to columns
+    for application in applications:
+        cols_dict.append({"label": database.app_get_name(application[0]), "type": 'number'})
 
     return jsonify(cols=cols_dict, rows=value)
 
