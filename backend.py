@@ -11,43 +11,47 @@ from database import Database
 import configuration
 
 __author__ = 'Michael Morscher'
-__description__ = 'REST backend service'
+__description__ = 'Python Flask REST backend service'
 __copyright__ = "Copyright 2016"
-__version__ = "0.1"
+__version__ = "0.2"
 __maintainer__ = "Michael Morscher"
 __email__ = "morscher@hm.edu"
 __status__ = "in development"
 
-# database connection
+# Make Database connection
 database = Database(configuration.database_host, configuration.database_user,
                     configuration.database_password, configuration.database_name)
 
-# flask app configuration
+# Flask app configuration
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret_key'
 app.config['CORS_HEADERS'] = 'Content-Type'
-host_ip = '0.0.0.0'
-debug_level = True
 
 
+# Default index page
 @app.route("/")
 def index():
     return "Steam Watcher Backend REST API v{0}".format(__version__)
 
 
+# Return information about a single user
 @app.route("/user/information/user/<user>/")
 @cross_origin(origin='*', headers=['Content- Type', 'Authorization'])
 def user_information(user):
     data = []
     result = database.user_get_single_data(user)
-    data.append({'id': user})
-    data.append({'name': result[0][0]})
-    data.append({'steamid': result[0][1]})
-    data.append({'created': "{0}".format(result[0][2])})
-    data.append({'recorded_playtime': int(database.user_get_recorded_playtime(user)[0][0])})
-    return json.dumps(data)
+    if result is not ():
+        data.append({'id': user})
+        data.append({'name': result[0][0]})
+        data.append({'steamid': result[0][1]})
+        data.append({'created': "{0}".format(result[0][2])})
+        data.append({'recorded_playtime': int(database.user_get_recorded_playtime(user)[0][0])})
+        return json.dumps(data)
+    else:
+        return json.dumps([{'code': '400'}, {'message': 'User not found!'}])
 
 
+# Return a list of all currently activated users
 @app.route("/user/list/")
 @cross_origin(origin='*', headers=['Content- Type', 'Authorization'])
 def user_list():
@@ -58,7 +62,9 @@ def user_list():
     return json.dumps(data)
 
 
+# Return the total playtime of a user of all apps on a given date (1 day)
 @app.route("/block/day/<day>/user/<user>")
+@cross_origin(origin='*', headers=['Content- Type', 'Authorization'])
 def block_day(day, user):
     value = database.block_playtime_day_total(user, day)[0][0]
     if value is not None:
@@ -68,7 +74,7 @@ def block_day(day, user):
     return json.dumps(data)
 
 
-# diagram x - get the total amount of playtime in a month
+# Return total playtime for all apps for a given month
 @app.route("/block/month/total/<month>/user/<user>/")
 @cross_origin(origin='*', headers=['Content- Type', 'Authorization'])
 def block_month_total(month, user):
@@ -80,19 +86,19 @@ def block_month_total(month, user):
     return json.dumps(data)
 
 
-# diagram 5 - last given days
+# Return total playtime for each app for each day for the last X days (given)
 @app.route("/block/last/days/<days>/user/<user>/")
 @cross_origin(origin='*', headers=['Content- Type', 'Authorization'])
-def block_last_dayst(days, user):
+def block_last_days(days, user):
     value = []
 
-    # get todays date
+    # get today's date
     today = datetime.date.today()
 
     # get all used apps for the last given days
     applications = database.blocks_get_ids_lastdays(user, int(days))
 
-    # check for every day
+    # check data for every day
     for x in range(1, int(days) + 1):
 
         # calculate date difference
@@ -103,14 +109,19 @@ def block_last_dayst(days, user):
         # query db for playtime
         result = database.block_playtime_day_total_detailed(user, date)
 
+        # for each app used in the whole period
         for application in applications:
             found = False
-            for applicationtime in result:
 
-                if application[0] == applicationtime[0]:
+            # for every app used on that day
+            for application_time in result:
+
+                # if app was used that day
+                if application[0] == application_time[0]:
                     found = True
-                    entry.append({"v": int(applicationtime[1])})
+                    entry.append({"v": int(application_time[1])})
 
+            # else return 0 minutes as value
             if found is False:
                 entry.append({"v": 0})
 
@@ -246,7 +257,8 @@ def block_month_last365(user):
             result = 0
 
         # add result to the final list
-        value.append({"c": [{"v": "Date({0}, {1}, {2})".format(day.year, int(day.month) - 1, day.day)}, {"v": int(result)}]})
+        value.append({"c": [{"v": "Date({0}, {1}, {2})".format(day.year, int(day.month) - 1, day.day)},
+                            {"v": int(result)}]})
 
         # do the calculation for the next iteration
         day = day - dateutils.relativedelta(days=+1)
@@ -256,9 +268,8 @@ def block_month_last365(user):
         {"label": 'Day', "type": 'date'},
         {"label": 'Playtime', "type": 'number'}
     ]
-
     return jsonify(cols=cols_dict, rows=value)
 
 
 if __name__ == "__main__":
-    app.run(host=host_ip, debug=debug_level)
+    app.run(host=configuration.server_listen_ip, debug=configuration.server_debug_level)
