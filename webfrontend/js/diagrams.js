@@ -1,22 +1,137 @@
+var baseurl = 'http://127.0.0.1:5000';
+var userid = 6;
+
 google.charts.load('current', {
     packages: ['corechart', 'bar', 'calendar']
 });
-google.charts.setOnLoadCallback(drawMonthlyDetails);
-google.charts.setOnLoadCallback(drawAppDistribution);
-google.charts.setOnLoadCallback(drawYearlyPlaytime);
-google.charts.setOnLoadCallback(drawWeeklyDetails);
-google.charts.setOnLoadCallback(drawCalendar);
+
+// list of all possible options in the left navbar
+var options = ["last_week", "last_month", "last_year", "for_days"];
 
 
-function drawMonthlyDetails(url) {
+// change the CSS class in the navbar according to the current selection (to .active-second)
+function handleActive(option){
+	for (i = 0; i < options.length; i++) {
+		if(options[i] !== option){
+			document.getElementById(options[i]).className = '';
+		}else{
+			document.getElementById(options[i]).className = 'active-second';
+		}
+	}	
+}
+
+// draw the diagram
+function draw(diagram, i){
+	handleActive(diagram);
+	document.getElementById('dropdown_days').style.display = 'none';
+	
+	switch(diagram) {
+    case 'last_week':
+		document.getElementById('title').innerHTML = 'Last Week';
+        google.charts.setOnLoadCallback(
+			function () {
+				drawLastWeek();
+			}
+		);
+        break;
+		
+    case 'last_month':
+		document.getElementById('title').innerHTML = 'Last Month';
+        google.charts.setOnLoadCallback(
+			function () {
+				drawLastMonth();
+			}
+		);
+        break;
+		
+	case 'last_year':
+		document.getElementById('title').innerHTML = 'Last Year';
+        google.charts.setOnLoadCallback(drawLastYear);
+        break;
+	
+	case 'for_days':
+		document.getElementById('dropdown_days').style.display = 'inline';
+		document.getElementById('title').innerHTML = 'For ' + i + ' Days';
+        google.charts.setOnLoadCallback(
+			function () {
+				drawLastDays(i);
+			}
+		);
+        break;
+	} 
+}
+
+
+function drawLastDays(days) {
+	$.ajax({
+        url: baseurl + "/block/last/days/" + days + "/user/" + userid + "/",
+        dataType: "json",
+        async: true
+    }).done(function(result){
+
+		var options = {
+			title: 'Playtime for last ' + days + ' days',
+			isStacked: true,
+			width: 1200,
+			height: 450,
+			hAxis: {
+				title: 'Day'
+			},
+			vAxis: {
+				title: 'Playtime in Minutes'
+			}
+		};
+
+		var data = new google.visualization.DataTable(result);
+		var chart = new google.visualization.ColumnChart(document.getElementById('chart_main'));
+		chart.draw(data, options);
+	});
+}
+
+function drawLastWeek(){
+	drawLastDays(7);
+}
+
+function drawLastMonth(){
+	drawLastDays(30);
+}
+
+function drawLastYear() {
     $.ajax({
-        url: "http://127.0.0.1:5000/block/month/details/2016-02/user/4/",
+        url: baseurl + "/block/month/last12/user/" + userid + "/",
+        dataType: "json",
+        async: true
+    }).done(function(result){
+
+		var options = {
+			title: 'Playtime per Month in the last year',
+			hAxis: {
+				title: 'Month'
+			},
+			vAxis: {
+				title: 'Playtime in Minutes'
+			},
+			legend: 'none'
+		};
+
+		var data = new google.visualization.DataTable(result);
+		var chart = new google.visualization.ColumnChart(
+			document.getElementById('chart_main'));
+
+		chart.draw(data, options);
+	});
+}
+
+
+function drawGivenMonth() {
+    $.ajax({
+        url: baseurl + "/block/month/details/" + month + "/user/" + userid + "/",
         dataType: "json",
         async: true
     }).done(function(result){
 		
 		var options = {
-        title: 'Playtime for 2016-02',
+        title: 'Playtime for ' + month,
         isStacked: true,
         width: 1200,
         height: 450,
@@ -29,21 +144,23 @@ function drawMonthlyDetails(url) {
     };
 
     var data = new google.visualization.DataTable(result);
-    var chart = new google.visualization.ColumnChart(document.getElementById('chart_monthly_details'));
+    var chart = new google.visualization.ColumnChart(document.getElementById('chart_main'));
     chart.draw(data, options);
 	});   
 }
 
+
+
 function drawAppDistribution() {
     $.ajax({
-        url: "http://127.0.0.1:5000/block/month/playtime/2016-02/user/4/",
+        url: baseurl +"/block/month/playtime/" + month + "/user/" + userid + "/",
         dataType: "json",
         async: true
     }).done(function(result){
 
 		var options = {
-			title: 'Games in month 2016-02',
-			//pieHole: 0.4,
+			title: 'Games in month ' + month,
+			pieHole: 0.4,
 			height: 450,
 		};
 
@@ -54,35 +171,11 @@ function drawAppDistribution() {
 	});
 }
 
-function drawYearlyPlaytime() {
-    $.ajax({
-        url: "http://127.0.0.1:5000/block/month/last12/user/4/",
-        dataType: "json",
-        async: true
-    }).done(function(result){
 
-		var options = {
-			title: 'Playtime per Month in the year 2016',
-			hAxis: {
-				title: 'Month'
-			},
-			vAxis: {
-				title: 'Playtime in Minutes'
-			},
-			legend: 'none'
-		};
-
-		var data = new google.visualization.DataTable(result);
-		var chart = new google.visualization.ColumnChart(
-			document.getElementById('chart_yearly_playtime'));
-
-		chart.draw(data, options);
-	});
-}
 
 function drawCalendar() {
     $.ajax({
-        url: "http://127.0.0.1:5000/block/month/last365/user/4/",
+        url: baseurl + "/block/month/last365/user/" + userid + "/",
         dataType: "json",
         async: true
     }).done(function(result){
@@ -99,28 +192,3 @@ function drawCalendar() {
 	});
 }
 
-function drawWeeklyDetails() {
-	$.ajax({
-        url: "http://127.0.0.1:5000/block/last/days/7/user/4/",
-        dataType: "json",
-        async: true
-    }).done(function(result){
-
-		var options = {
-			title: 'Playtime for last 7 days',
-			isStacked: true,
-			width: 1200,
-			height: 450,
-			hAxis: {
-				title: 'Day'
-			},
-			vAxis: {
-				title: 'Playtime in Minutes'
-			}
-		};
-
-		var data = new google.visualization.DataTable(result);
-		var chart = new google.visualization.ColumnChart(document.getElementById('chart_weekly_playtime'));
-		chart.draw(data, options);
-	});
-}

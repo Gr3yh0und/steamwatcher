@@ -41,9 +41,9 @@
 					<li class="dropdown">
 						<a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Steam <span class="caret"></span></a>
 						<ul class="dropdown-menu">
-							<li><a href="user_overview.html">Current Status</a>
+							<li><a href="#">Current Status</a>
 							</li>
-							<li><a href="user_details.html">News</a>
+							<li><a href="#">News</a>
 							</li>
 						</ul>
 					</li>
@@ -85,7 +85,7 @@
                         <ul class="nav navbar-nav" id="sidenav01">
 						
                             <li class="active">
-                                <a href="#" data-toggle="collapse" data-target="#toggleDemo0" data-parent="#sidenav01" class="collapsed">
+                                <a data-toggle="collapse" data-target="#toggleDemo0" data-parent="#sidenav01" class="collapsed">
                                     <h4>User Details for XXX</h4>
                                 </a>
                             </li>
@@ -96,9 +96,10 @@
                                 </a>
                                 <div class="collapse" id="toggleDemo" style="height: 0px;">
                                     <ul class="nav nav-list">
-                                        <li><a href="#"> Last Week</a></li>
-                                        <li><a href="#"> Last Month</a></li>
-                                        <li><a href="#"> Last Year</a></li>
+                                        <li id="last_week"><a href="#" onClick="draw('last_week')"> Last Week</a></li>
+                                        <li id="last_month"><a href="#" onClick="draw('last_month')"> Last Month</a></li>
+                                        <li id="last_year"><a href="#" onClick="draw('last_year')"> Last Year</a></li>
+										<li id="for_days"><a href="#" onClick="draw('for_days', 7)"> For given Days</a></li>
                                     </ul>
                                 </div>
                             </li>
@@ -109,9 +110,9 @@
                                 </a>
                                 <div class="collapse" id="toggleDemo2" style="height: 0px;">
                                     <ul class="nav nav-list">
-                                        <li><a href="#"> For Days</a></li>
-                                        <li><a href="#"> For a Month</a></li>
-                                        <li><a href="#"> For a Year</a></li>
+                                        <li><a href="#"> For each Week</a></li>
+                                        <li><a href="#"> For each Month</a></li>
+                                        <li><a href="#"> For each Year</a></li>
                                     </ul>
                                 </div>
                             </li>
@@ -141,41 +142,47 @@
         <div class="col-sm-9 col-md-10 affix-content">
             <div class="container">
                 <div class="page-header">
-                    <h3><span class="glyphicon glyphicon-th-list"></span> Last 7 days</h3>
+                    <h3 id="title">Please choose an option on the left</h3>
                 </div>
 
                 <!-- content -->
-                <div class="col-md-3">
-
-                    <div class="container">
-                        <h1>Current available statistics</h1>
-                        <p class="lead">The following diagrams are displayed for development purposes only.</p>
+                <div class="col-md-10">
+				
+				<!-- Dropdown for days button -->
+				<div class="container"  id="dropdown_days"  style="display:none;">
+					Please select the amount of days:
+					<div class="btn-group">
+					  <button type="button" class="btn btn-danger">Days</button>
+					  <button type="button" class="btn btn-danger dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						<span class="caret"></span>
+						<span class="sr-only">Toggle Dropdown</span>
+					  </button>
+					  <ul class="dropdown-menu">
+						<li><a href="#" onClick="draw('for_days', 7)">7</a></li>
+						<li><a href="#"  onClick="draw('for_days', 14)">14</a></li>
+						<li><a href="#"  onClick="draw('for_days', 21)">21</a></li>
+						<li><a href="#"  onClick="draw('for_days', 28)">28</a></li>
+						<li><a href="#"  onClick="draw('for_days', 35)">35</a></li>
+						<li><a href="#"  onClick="draw('for_days', 42)">42</a></li>
+						<li><a href="#"  onClick="draw('for_days', 49)">49</a></li>
+						<li><a href="#"  onClick="draw('for_days', 56)">56</a></li>
+						<li><a href="#"  onClick="draw('for_days', 63)">63</a></li>
+						<li><a href="#"  onClick="draw('for_days', 70)">70</a></li>
+					  </ul>
+					</div>
+				</div>
+					
+					<!-- main diagram -->
+					<div class="container">
+                        <div id="chart_main"></div>
+                    </div>
+					
+					<!-- distribution diagram -->
+					<div class="container">
+                        <div id="chart_distribution"></div>
                     </div>
 
-                    <div class="container">
-                        <h1>Playtime of apps in one month</h1>
-                        <div id="chart_monthly_details"></div>
-                    </div>
-
-                    <div class="container">
-                        <h1>Distribution of playtime in apps in one month</h1>
-                        <div id="chart_app_distribution"></div>
-                    </div>
-
-                    <div class="container">
-                        <h1>Total playtime of all apps in the last 12 months</h1>
-                        <div id="chart_yearly_playtime"></div>
-                    </div>
-
-                    <div class="container">
-                        <h1>Calendar displaying total playtime of all apps on every day</h1>
-                        <div id="calendar_basic"></div>
-                    </div>
-
-                    <div class="container">
-                        <h1>Playtime of apps in last 7 days</h1>
-                        <div id="chart_weekly_playtime"></div>
-                    </div>
+                    
                 </div>
 
             </div>
@@ -183,10 +190,10 @@
     </div>
 
     <!-- javascript libraries -->
-    <script src="js/jquery-1.12.1.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js/jquery-1.12.1.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap.min.js"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script src="js/diagrams.js"></script>
+    <script type="text/javascript" src="js/diagrams.js"></script>
 
 </body>
 
