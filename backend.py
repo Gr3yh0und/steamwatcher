@@ -91,6 +91,7 @@ def block_month_total(month, user):
 @cross_origin(origin='*', headers=['Content- Type', 'Authorization'])
 def block_last_days(days, user):
     value = []
+    total = 0
 
     # get today's date
     today = datetime.date.today()
@@ -120,6 +121,7 @@ def block_last_days(days, user):
                 if application[0] == application_time[0]:
                     found = True
                     entry.append({"v": int(application_time[1])})
+                    total += application_time[1]
 
             # else return 0 minutes as value
             if found is False:
@@ -135,7 +137,15 @@ def block_last_days(days, user):
     for application in applications:
         cols_dict.append({"label": database.app_get_name(application[0]), "type": 'number'})
 
-    return jsonify(cols=cols_dict, rows=value)
+    if total > 0:
+        return jsonify(total=int(total), cols=cols_dict, rows=value)
+    else:
+        return jsonify(error_message(400, "Sorry, there is no information available for the given time windows!", "Total playtime is null"))
+
+
+# returns an error message
+def error_message(error_code, error_message_user, error_message_internal):
+    return {"errors": [{"userMessage": error_message_user, "internalMessage": error_message_internal, "code": error_code}]}
 
 
 # diagram 1 - get details for a month / every day and every game
