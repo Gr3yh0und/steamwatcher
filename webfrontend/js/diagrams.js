@@ -67,7 +67,8 @@ function drawLastDays(days) {
         url: baseurl + "/block/last/days/" + days + "/user/" + userid + "/",
         dataType: "json",
         async: true
-    }).done(function(result){
+    })
+	.done(function(result){
 
 		var options = {
 			title: 'Playtime for last ' + days + ' days',
@@ -85,6 +86,10 @@ function drawLastDays(days) {
 		var data = new google.visualization.DataTable(result);
 		var chart = new google.visualization.ColumnChart(document.getElementById('chart_main'));
 		chart.draw(data, options);
+	})
+	.fail(function(result){
+		error = jQuery.parseJSON(result.responseText);
+		document.getElementById('chart_main').innerHTML = "<h3>" + error.errors[0].userMessage + "</h3>";
 	});
 }
 
@@ -101,7 +106,8 @@ function drawLastYear() {
         url: baseurl + "/block/month/last12/user/" + userid + "/",
         dataType: "json",
         async: true
-    }).done(function(result){
+    })
+	.done(function(result){
 
 		var options = {
 			title: 'Playtime per Month in the last year',
@@ -119,6 +125,10 @@ function drawLastYear() {
 			document.getElementById('chart_main'));
 
 		chart.draw(data, options);
+	})
+	.fail(function(result){
+		error = jQuery.parseJSON(result.responseText);
+		document.getElementById('chart_main').innerHTML = "<h3>" + error.errors[0].userMessage + "</h3>";
 	});
 }
 
@@ -128,27 +138,31 @@ function drawGivenMonth() {
         url: baseurl + "/block/month/details/" + month + "/user/" + userid + "/",
         dataType: "json",
         async: true
-    }).done(function(result){
+    })
+	.done(function(result){
 		
 		var options = {
-        title: 'Playtime for ' + month,
-        isStacked: true,
-        width: 1200,
-        height: 450,
-        hAxis: {
-            title: 'Day'
-        },
-        vAxis: {
-            title: 'Playtime in Minutes'
-        }
-    };
+			title: 'Playtime for ' + month,
+			isStacked: true,
+			width: 1200,
+			height: 450,
+			hAxis: {
+				title: 'Day'
+			},
+			vAxis: {
+				title: 'Playtime in Minutes'
+			}
+		};
 
-    var data = new google.visualization.DataTable(result);
-    var chart = new google.visualization.ColumnChart(document.getElementById('chart_main'));
-    chart.draw(data, options);
+		var data = new google.visualization.DataTable(result);
+		var chart = new google.visualization.ColumnChart(document.getElementById('chart_main'));
+		chart.draw(data, options);
+	})
+	.fail(function(result){
+		error = jQuery.parseJSON(result.responseText);
+		document.getElementById('chart_main').innerHTML = "<h3>" + error.errors[0].userMessage + "</h3>";
 	});   
 }
-
 
 
 function drawAppDistribution() {
@@ -156,7 +170,8 @@ function drawAppDistribution() {
         url: baseurl +"/block/month/playtime/" + month + "/user/" + userid + "/",
         dataType: "json",
         async: true
-    }).done(function(result){
+    })
+	.done(function(result){
 
 		var options = {
 			title: 'Games in month ' + month,
@@ -167,10 +182,12 @@ function drawAppDistribution() {
 		var data = new google.visualization.DataTable(result);
 		var chart = new google.visualization.PieChart(document.getElementById('chart_app_distribution'));
 		chart.draw(data, options);
-		
+	})
+	.fail(function(result){
+		error = jQuery.parseJSON(result.responseText);
+		document.getElementById('chart_app_distribution').innerHTML = "<h3>" + error.errors[0].userMessage + "</h3>";
 	});
 }
-
 
 
 function drawCalendar() {
@@ -178,7 +195,8 @@ function drawCalendar() {
         url: baseurl + "/block/month/last365/user/" + userid + "/",
         dataType: "json",
         async: true
-    }).done(function(result){
+    })
+	.done(function(result){
 
 		var data = new google.visualization.DataTable(result);
 		var chart = new google.visualization.Calendar(document.getElementById('calendar_basic'));
@@ -189,6 +207,10 @@ function drawCalendar() {
 		};
 
 		chart.draw(data, options);
+	})
+	.fail(function(result){
+		error = jQuery.parseJSON(result.responseText);
+		document.getElementById('calendar_basic').innerHTML = "<h3>" + error.errors[0].userMessage + "</h3>";
 	});
 }
 

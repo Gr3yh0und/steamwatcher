@@ -29,6 +29,13 @@ app.config['SECRET_KEY'] = 'secret_key'
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 
+# returns an error message
+def error_message(error_code, error_message_user, error_message_internal):
+    return {"errors": [{"userMessage": error_message_user,
+                        "internalMessage": error_message_internal,
+                        "code": error_code}]}
+
+
 # Default index page
 @app.route("/")
 def index():
@@ -91,29 +98,53 @@ def block_day(day, user):
                    status.HTTP_400_BAD_REQUEST
 
         # query database
-        value = database.block_playtime_day_total(user, day)[0][0]
+        result = database.block_playtime_day_total(user, day)[0][0]
     else:
         return jsonify(error_message(503, "Database server not available!",
                                      "No available connection to the database server!")), \
                status.HTTP_503_SERVICE_UNAVAILABLE
 
-    if value is not None:
-        data = [{'value': int(value)}]
+    # check if database result makes sense
+    if result is not None:
+        value = int(result)
     else:
-        data = [{'value': 0}]
-    return json.dumps(data)
+        value = 0
+
+    return jsonify(day=day, user=user, value=value)
 
 
 # Return total playtime for all apps for a given month
 @app.route("/block/month/total/<month>/user/<user>/")
 @cross_origin(origin='*', headers=['Content- Type', 'Authorization'])
 def block_month_total(month, user):
-    value = database.block_playtime_month(user, month)[0][0]
-    if value is not None:
-        data = [{'value': int(value)}]
+
+    # check if queried user exists
+    if not database.user_exists(user):
+        return jsonify(error_message(404, "Error: User not found!", "User not found!")), status.HTTP_404_NOT_FOUND
+
+    # check if queried day has correct format
+    try:
+        datetime.datetime.strptime(month, '%Y-%m')
+    except ValueError:
+        return jsonify(error_message(400, "Error: Incorrect or not possible data format for given month (YYYY-MM)!",
+                                     "Incorrect or not possible data format for given month (YYYY-MM)!")),\
+               status.HTTP_400_BAD_REQUEST
+
+    # check if queried day is not in the future
+    if datetime.datetime.strptime(month, "%Y-%m") > datetime.datetime.now():
+        return jsonify(error_message(400, "Error: Given month is in the future!", "Given month is in the future!")),\
+               status.HTTP_400_BAD_REQUEST
+
+    # query database
+    result = database.block_playtime_month(user, month)[0][0]
+
+    # check if database result makes sense
+    if result is not None:
+        value = int(result)
     else:
-        data = [{'value': 0}]
-    return json.dumps(data)
+        value = 0
+
+    return jsonify(month=month, user=user, value=value)
 
 
 # Return total playtime for each app for each day for the last X days (given)
@@ -123,14 +154,30 @@ def block_last_days(days, user):
     value = []
     total = 0
 
+    # check if queried user exists
+    if not database.user_exists(user):
+        return jsonify(error_message(404, "Error: User not found!", "User not found!")), status.HTTP_404_NOT_FOUND
+
+    # check if parameter is a number and convert it to integer
+    try:
+        days = int(days)
+    except:
+        return jsonify(error_message(400, "Error: Days is no number!",
+                                     "Days is no number: Int transformation not possible!")), status.HTTP_404_NOT_FOUND
+
+    # check if days are higher than a year: Not allowed due to runtime duration of db query
+    if days > 365:
+        return jsonify(error_message(400, "Error: Days is not allowed to be higher than 365!",
+                                     "Days is not allowed to be higher than 365!")), status.HTTP_404_NOT_FOUND
+
     # get today's date
     today = datetime.date.today()
 
     # get all used apps for the last given days
-    applications = database.blocks_get_ids_lastdays(user, int(days))
+    applications = database.blocks_get_ids_lastdays(user, days)
 
     # check data for every day
-    for x in range(1, int(days) + 1):
+    for x in range(1, days + 1):
 
         # calculate date difference
         day = today - datetime.timedelta(days=x)
@@ -170,12 +217,8 @@ def block_last_days(days, user):
     if total > 0:
         return jsonify(total=int(total), cols=cols_dict, rows=value)
     else:
-        return jsonify(error_message(400, "Sorry, there is no information available for the given time windows!", "Total playtime is null"))
-
-
-# returns an error message
-def error_message(error_code, error_message_user, error_message_internal):
-    return {"errors": [{"userMessage": error_message_user, "internalMessage": error_message_internal, "code": error_code}]}
+        return jsonify(error_message(400, "Sorry, there is no information available for the given time window!",
+                                     "Total playtime is null")), status.HTTP_404_NOT_FOUND
 
 
 # diagram 1 - get details for a month / every day and every game
