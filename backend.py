@@ -6,6 +6,7 @@ import datetime
 import dateutils
 from flask import Flask, jsonify
 from flask_cors import cross_origin
+from flask_api import status
 
 from database import Database
 import configuration
@@ -48,10 +49,11 @@ def user_information(user):
         data.append({'recorded_playtime': int(database.user_get_recorded_playtime(user)[0][0])})
         return json.dumps(data)
     else:
-        return json.dumps([{'code': '400'}, {'message': 'User not found!'}])
+        return jsonify(error_message(404, "User not found!", "User not found!")), status.HTTP_404_NOT_FOUND
 
 
 # Return a list of all currently activated users
+# ToDO: to be removed because of security reasons? Hiding data?
 @app.route("/user/list/")
 @cross_origin(origin='*', headers=['Content- Type', 'Authorization'])
 def user_list():
@@ -63,10 +65,38 @@ def user_list():
 
 
 # Return the total playtime of a user of all apps on a given date (1 day)
-@app.route("/block/day/<day>/user/<user>")
+@app.route("/block/day/<day>/user/<user>/")
 @cross_origin(origin='*', headers=['Content- Type', 'Authorization'])
 def block_day(day, user):
-    value = database.block_playtime_day_total(user, day)[0][0]
+
+    # ToDo: Manage database connection right
+    # check database connection first
+    if database.alive_status():
+
+        # check if queried user exists
+        if not database.user_exists(user):
+            return jsonify(error_message(404, "User not found!", "User not found!")), status.HTTP_404_NOT_FOUND
+
+        # check if queried day has correct format
+        try:
+            datetime.datetime.strptime(day, '%Y-%m-%d')
+        except ValueError:
+            return jsonify(error_message(400, "Incorrect or not possible data format for given day (YYYY-MM-DD)!",
+                                         "Incorrect or not possible data format for given day (YYYY-MM-DD)!")),\
+                   status.HTTP_400_BAD_REQUEST
+
+        # check if queried day is not in the future
+        if datetime.datetime.strptime(day, "%Y-%m-%d") > datetime.datetime.now():
+            return jsonify(error_message(400, "Given date is in the future!", "Given date is in the future!")),\
+                   status.HTTP_400_BAD_REQUEST
+
+        # query database
+        value = database.block_playtime_day_total(user, day)[0][0]
+    else:
+        return jsonify(error_message(503, "Database server not available!",
+                                     "No available connection to the database server!")), \
+               status.HTTP_503_SERVICE_UNAVAILABLE
+
     if value is not None:
         data = [{'value': int(value)}]
     else:
