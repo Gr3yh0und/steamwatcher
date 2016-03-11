@@ -28,6 +28,13 @@ class Database(object):
         self.password = password
         self.db = Lock()
         self.logger = logging.getLogger("steam.database")
+        self.__connection = Sql.connect(self.server, self.user, self.password, self.database)
+
+    def alive_status(self):
+        if self.__connection.open:
+            return True
+        else:
+            return False
 
     def send_command(self, command):
         result = None
@@ -44,13 +51,14 @@ class Database(object):
 
     def execute_command(self, command):
         result = None
-        connection = Sql.connect(self.server, self.user, self.password, self.database)
-        with connection:
-            cursor = connection.cursor()
+        with self.__connection:
+            cursor = self.__connection.cursor()
             cursor.execute(command)
             if command.startswith("SELECT"):
                 result = cursor.fetchall()
         return result
+
+
 
     # data -> list: return from sql query
     @staticmethod
