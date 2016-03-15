@@ -161,11 +161,11 @@ class Database(object):
         end = "{0}-31".format(month)
         return self.send_command("SELECT SUM(duration) FROM blocks WHERE id_user = '{0}' AND start BETWEEN '{1}' AND '{2}'".format(user_id, start, end))
 
-    def blocks_get_day_app_ids(self, user_id, day):
+    def blocks_app_ids_day(self, user_id, day):
         return self.send_command("SELECT DISTINCT(id_app) FROM blocks WHERE id_user = '{0}' AND start LIKE '{1}%'".format(user_id, day))
 
-    def blocks_get_ids_lastdays(self, user_id, days):
-        return self.send_command("SELECT DISTINCT(id_app) FROM blocks WHERE id_user = '{0}' AND DATE_SUB(CURDATE(),INTERVAL {1} DAY) <= start".format(user_id, days))
+    def blocks_app_ids_days_last(self, user_id, days):
+        return self.send_command("SELECT id_app FROM blocks WHERE id_user = '{0}' AND DATE_SUB(CURDATE(),INTERVAL {1} DAY) <= start GROUP BY id_app ORDER BY MAX(start) DESC".format(user_id, days))
 
     def blocks_get_month_app_ids(self, user_id, month):
         start = "{0}-01".format(month)

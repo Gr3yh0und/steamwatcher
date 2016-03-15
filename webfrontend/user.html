@@ -97,9 +97,9 @@
                                 <div class="collapse" id="toggleDemo" style="height: 0px;">
                                     <ul class="nav nav-list">
                                         <li id="last_week"><a href="#" onClick="draw('last_week')"> Last Week</a></li>
+										<li id="for_days"><a href="#" onClick="draw('for_days', 7)"> Last Weeks</a></li>
                                         <li id="last_month"><a href="#" onClick="draw('last_month')"> Last Month</a></li>
                                         <li id="last_year"><a href="#" onClick="draw('last_year')"> Last Year</a></li>
-										<li id="for_days"><a href="#" onClick="draw('for_days', 7)"> For given Days</a></li>
                                     </ul>
                                 </div>
                             </li>
@@ -171,6 +171,11 @@
 					  </ul>
 					</div>
 				</div>
+				
+					<!-- statistics -->
+					<div class="container">
+                        <div id="statistics"></div>
+                    </div>
 					
 					<!-- main diagram -->
 					<div class="container">
@@ -181,7 +186,11 @@
 					<div class="container">
                         <div id="chart_distribution"></div>
                     </div>
-
+					
+					<!-- calendar diagram -->
+					<div class="container">
+                        <div id="chart_calendar"></div>
+                    </div>
                     
                 </div>
 

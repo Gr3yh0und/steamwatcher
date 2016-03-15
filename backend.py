@@ -152,6 +152,7 @@ def block_month_total(month, user):
 @cross_origin(origin='*', headers=['Content- Type', 'Authorization'])
 def block_last_days(days, user):
     value = []
+    distribution_data = {}
     total = 0
 
     # check if queried user exists
@@ -174,7 +175,7 @@ def block_last_days(days, user):
     today = datetime.date.today()
 
     # get all used apps for the last given days
-    applications = database.blocks_get_ids_lastdays(user, days)
+    applications = database.blocks_app_ids_days_last(user, days)
 
     # check data for every day
     for x in range(1, days + 1):
@@ -191,6 +192,10 @@ def block_last_days(days, user):
         for application in applications:
             found = False
 
+            # create entry in dictionary for distribution
+            if application[0] not in distribution_data:
+                distribution_data[application[0]] = 0
+
             # for every app used on that day
             for application_time in result:
 
@@ -199,6 +204,7 @@ def block_last_days(days, user):
                     found = True
                     entry.append({"v": int(application_time[1])})
                     total += application_time[1]
+                    distribution_data[application[0]] += int(application_time[1])
 
             # else return 0 minutes as value
             if found is False:
@@ -207,15 +213,26 @@ def block_last_days(days, user):
         # add to list
         value.append({"c": entry})
 
-    # create columns dictionary and add X-Axis
-    cols_dict = [{"label": 'Day', "type": 'string'}]
+    # create columns for JSON data
+    cols_details = [{"label": 'Day', "type": 'string'}]
+    cols_distribution = [{"label": "App", "type": "string"}, {"label": "Playtime", "type": "number"}]
 
-    # add every app to columns
+    # details: add every app to columns
     for application in applications:
-        cols_dict.append({"label": database.app_get_name(application[0]), "type": 'number'})
+        cols_details.append({"label": database.app_get_name(application[0]), "type": 'number'})
+
+    # distribution: Convert data from dict to list
+    distribution_temp = []
+    for application in applications:
+        distribution_temp.append({"c": [{"v": database.app_get_name(application[0])}, {"v": distribution_data[application[0]]}]})
+
+    # define output data
+    distribution_final = {'cols': cols_distribution, 'rows': distribution_temp}
+    details = {'cols': cols_details, 'rows': value}
+    statistics = {'total': int(total), 'average': 0}
 
     if total > 0:
-        return jsonify(total=int(total), cols=cols_dict, rows=value)
+        return jsonify(details=details, distribution=distribution_final, statistics=statistics)
     else:
         return jsonify(error_message(400, "Sorry, there is no information available for the given time window!",
                                      "Total playtime is null")), status.HTTP_404_NOT_FOUND
@@ -286,7 +303,8 @@ def block_month_app_playtime(month, user):
 @app.route("/block/month/last12/user/<user>/")
 @cross_origin(origin='*', headers=['Content- Type', 'Authorization'])
 def block_month_last12(user):
-    value = []
+    rows = []
+    total = 0
 
     # calculate the first day of the current month
     day_today = datetime.date.today()
@@ -305,7 +323,8 @@ def block_month_last12(user):
             result = 0
 
         # add result to the final list
-        value.append({"c": [{"v": date}, {"v": int(result)}]})
+        rows.append({"c": [{"v": date}, {"v": int(result)}]})
+        total += result
 
         # do the calculation for the next iteration
         month = month - dateutils.relativedelta(months=+1)
@@ -316,7 +335,7 @@ def block_month_last12(user):
         {"label": 'Playtime', "type": 'number'}
     ]
 
-    return jsonify(cols=cols_dict, rows=value)
+    return jsonify(cols=cols_dict, rows=rows, total=int(total))
 
 
 # diagram 4 - calendar
