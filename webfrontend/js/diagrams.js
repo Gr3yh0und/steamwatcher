@@ -1,5 +1,5 @@
 var baseurl = 'http://127.0.0.1:5000';
-var userid = 4;
+
 
 google.charts.load('current', {
     packages: ['corechart', 'bar', 'calendar']
@@ -99,6 +99,7 @@ function drawLastDays(days) {
 		error = jQuery.parseJSON(result.responseText);
 		document.getElementById('chart_main').innerHTML = "<h3>" + error.errors[0].userMessage + "</h3>";
 		document.getElementById('chart_distribution').innerHTML = "";
+		document.getElementById('statistics').innerHTML = "";
 	});
 }
 
