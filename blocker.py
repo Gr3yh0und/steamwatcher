@@ -130,13 +130,18 @@ def find_blocks_day(id_user, day):
 
 if __name__ == "__main__":
 
+    users = database.user_get_list_active()
+
     for day in range(1, 32):
-    #    find_blocks_day(3, "2016-01-{0:0=2d}".format(day))
-    #    find_blocks_day(3, "2016-02-{0:0=2d}".format(day))
-    #    find_blocks_day(4, "2016-01-{0:0=2d}".format(day))
-         find_blocks_day(4, "2016-03-{0:0=2d}".format(day))
-    #    find_blocks_day(6, "2016-01-{0:0=2d}".format(day))
-    #    find_blocks_day(6, "2016-02-{0:0=2d}".format(day))
+
+        for user in users:
+
+            find_blocks_day(user[0], "2016-01-{0:0=2d}".format(day))
+            find_blocks_day(user[0], "2016-02-{0:0=2d}".format(day))
+            find_blocks_day(user[0], "2016-03-{0:0=2d}".format(day))
+            find_blocks_day(user[0], "2015-10-{0:0=2d}".format(day))
+            find_blocks_day(user[0], "2015-11-{0:0=2d}".format(day))
+            find_blocks_day(user[0], "2015-12-{0:0=2d}".format(day))
 
     #print database.block_playtime_day_total(4, "2016-02-23")
     #print database.block_playtime_month(4, "2016-02")
