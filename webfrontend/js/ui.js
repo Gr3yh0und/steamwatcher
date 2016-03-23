@@ -1,8 +1,9 @@
 var userid = 0;
+document.getElementById('user_name').innerHTML = "<h3>Please select a user first!</h3>";
 
 // load user menu
 var result = jQuery.parseJSON($.ajax({
-	url: "http://127.0.0.1:5000/user/list/",
+	url: baseurl + "/user/list/",
 	dataType: "json",
 	async: false
 }).responseText);
