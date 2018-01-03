@@ -128,4 +128,5 @@ if __name__ == "__main__":
                     database.playtime_add(user_id, app['appid'], app['playtime_2weeks'], app['playtime_forever'])
                 else:
                     # add new app/game
-                    app_add(app['appid'], app['name'], app['img_icon_url'], app['img_logo_url'])
+                    if app.get("name"):
+                        app_add(app['appid'], app['name'], app['img_icon_url'], app['img_logo_url'])
