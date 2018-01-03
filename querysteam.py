@@ -129,17 +129,26 @@ if __name__ == "__main__":
     log.info("Execution started")
 
     # create database connection
-    database = Database(configuration.database_host, configuration.database_user, configuration.database_password,
-                        configuration.database_name)
+    log.info("Connecting to database {0} on {1}".format(configuration.database_name.encode('utf8'),
+                                                        configuration.database_host.encode('utf8')))
+    try:
+        database = Database(configuration.database_host, configuration.database_user, configuration.database_password,
+                            configuration.database_name)
+    except Exception, e:
+        log.warning("Database connection not successful!")
+        log.error("{0}".format(e))
+        log.error("Aborting run...")
+        exit(255)
 
     # get all activated users
+    log.info("Starting to query user information")
     for user in database.user_get_active():
         user_id = user[0]
         user_name = user[1]
         user_steam_id = user[2]
 
         # query stats for every user
-        log.debug("Getting stats for user: {0}".format(user_name))
+        log.debug("Getting stats for user: {0} ({1})".format(user_name, user_id))
         stats = steam_api_query(steam_api_recent_games(user_steam_id))
 
         # check if the user has played any games
@@ -158,3 +167,5 @@ if __name__ == "__main__":
                     if app.get("name"):
                         app_add(app.get("appid"), app.get("name"), app.get("img_icon_url"), app.get("img_logo_url"),
                                 database)
+
+    log.info("Execution stopped")
