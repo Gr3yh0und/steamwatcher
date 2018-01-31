@@ -60,8 +60,5 @@ class TestQuery(unittest.TestCase):
 
     @responses.activate
     def test_steam_api_query_failure(self):
-        with pytest.raises(ConnectionError):
+        with self.assertRaises(ConnectionError):
             requests.get(self.url, timeout=0.1)
-
-
-
