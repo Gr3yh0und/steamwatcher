@@ -144,6 +144,9 @@ class Database(object):
     def playtime_get_1day_game_ids(self, user_id, date):
         return self.send_command("SELECT DISTINCT(id_app) FROM {2} WHERE id_user = '{0}' AND date LIKE '{1}%'".format(user_id, date, TABLE_PLAYTIME))
 
+    def playtime_delete_1day(self, user_id, date):
+        return self.send_command("DELETE FROM {0} WHERE id_user = '{1}' AND date LIKE '{2}%'".format(TABLE_PLAYTIME, user_id, date))
+
 
 # blocks
 
