@@ -10,7 +10,6 @@ __email__ = "ich@morschi.com"
 __status__ = "in development"
 
 import unittest
-import pytest
 import responses
 import requests
 from requests.exceptions import ConnectionError
